@@ -1,0 +1,43 @@
+{
+  "name": "vue-2-crumbs",
+  "version": "0.4.0",
+  "description": "Breadcrumbs plugin for Vue.js 2 framework that allows to select parent route in route meta object with no need of sub-routing",
+  "author": {
+    "name": "Alexeev Kyrylo",
+    "email": "suruat90@gmail.com"
+  },
+  "main": "index.js",
+  "keywords": [
+    "breadcrumbs",
+    "vue",
+    "vuejs",
+    "vue2",
+    "plugin",
+    "route",
+    "router",
+    "vue-router"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/Suruat/vue-2-crumbs#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Suruat/vue-2-crumbs.git"
+  },
+  "bugs": "https://github.com/Suruat/vue-2-crumbs/issues",
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "webpack": "^3.11.0"
+  },
+  "peerDependencies": {
+    "vue": "2.x.x",
+    "vue-router": "^2.1.x"
+  },
+  "scripts": {
+    "build": "webpack",
+    "prebublish": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
