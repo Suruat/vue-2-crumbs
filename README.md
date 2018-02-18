@@ -63,7 +63,7 @@ new VueRouter({
 })
 ```
 **Result:**
-![Simple Usage Result](https://raw.githubusercontent.com/username/projectname/master/screenshots/simple-usage.png)
+![Simple Usage Result](https://raw.githubusercontent.com/Suruat/vue-2-crumbs/master/screenshots/simple-usage.png)
 
 ### Sub-routing
 Plugin also supports default behavior for nested routes:
@@ -142,7 +142,7 @@ new VueRouter({
 })
 ```
 **Result:**
-![Combine Usage Result](https://raw.githubusercontent.com/username/projectname/master/screenshots/combine-usage.png)
+![Combine Usage Result](https://raw.githubusercontent.com/Suruat/vue-2-crumbs/master/screenshots/combine-usage.png)
 
 ### Define Breadcrumb Data in Component
 You easily can define breadcrumbs information in page components. This would overwrite data in the router. For example:
@@ -207,7 +207,7 @@ new VueRouter({
 })
 ```
 **Result:**
-![Combine Usage Result](https://raw.githubusercontent.com/username/projectname/master/screenshots/component-usage.png)
+![Combine Usage Result](https://raw.githubusercontent.com/Suruat/vue-2-crumbs/master/screenshots/component-usage.png)
 
 ### Dynamic Breadcrumbs
 You can use **dynamic data** to provide breadcrumb information (as `label` and `parent`) in page component.
@@ -268,7 +268,7 @@ new VueRouter({
 })
 ```
 **Result:**
-![Combine Usage Result](https://raw.githubusercontent.com/username/projectname/master/screenshots/dynamic-breadcrumb.png)
+![Combine Usage Result](https://raw.githubusercontent.com/Suruat/vue-2-crumbs/master/screenshots/dynamic-breadcrumb.png)
 
 ### Using `parentsList`
 IF you need to use dynamic breadcrumb in the middle of your breadcrumb list, than you should provide whole chain in component's `parentsList` property. You need to provide list of objects that contain `path` and `label`, like in example below:
@@ -326,7 +326,7 @@ new VueRouter({
 })
 ```
 **Result:**
-![Combine Usage Result](https://raw.githubusercontent.com/username/projectname/master/screenshots/parentsList.png)
+![Combine Usage Result](https://raw.githubusercontent.com/Suruat/vue-2-crumbs/master/screenshots/parentsList.png)
 
 # License
 
