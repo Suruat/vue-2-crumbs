@@ -9,7 +9,7 @@ Breadcrumbs plugin for Vue.js 2 framework that allows to select parent route in 
 - Shorthand labeling (`breadcrumb: 'Page Label'`)
 - [Dynamic breadcrumbs](#dynamic-breadcrumbs) (with some caveats).
 
-##### Requirments:
+##### Requirements:
 - Vue: 2.x.x,
 - vue-router: ^2.1.x
 
