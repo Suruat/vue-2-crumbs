@@ -1,6 +1,6 @@
 {
   "name": "vue-2-crumbs",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Breadcrumbs plugin for Vue.js 2 framework that allows to select parent route in route meta object with no need of sub-routing",
   "author": {
     "name": "Alexeev Kyrylo",

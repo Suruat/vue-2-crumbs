@@ -9,6 +9,10 @@ Breadcrumbs plugin for Vue.js 2 framework that allows to select parent route in 
 - Shorthand labeling (`breadcrumb: 'Page Label'`)
 - [Dynamic breadcrumbs](#dynamic-breadcrumbs) (with some caveats).
 
+##### Requirments:
+- Vue: 2.x.x,
+- vue-router: ^2.1.x
+
 ## Installation
 
 ```sh
@@ -21,7 +25,7 @@ import Vue2Crumbs from 'vue-2-crumbs'
 
 Vue.use(Vue2Crumbs)
 ```
-After that `<breadcrumbs></breadcrumbs>` component would be at your expose.
+After that `<app-breadcrumbs></app-breadcrumbs>` component would be at your expose.
 
 ## Usage
 Use the `breadcrumb` property in route's `meta` to provide route label or/and parent route `name` as in example below:
@@ -33,7 +37,7 @@ new VueRouter({
     {
       path: '/',
       name: 'home', // Be sure to set 'name' property for the route you want to be "parent" route
-      component: Page,
+      component: Home,
       meta: {
         breadcrumb: 'Home Custom Label' // This is a shorthand for case you want to set just breadcrumb label
       }
