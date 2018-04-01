@@ -279,7 +279,7 @@ new VueRouter({
 
 
 ### Using `parentsList`
-IF you need to use dynamic breadcrumb in the middle of your breadcrumb list, than you should provide whole chain in component's `parentsList` property. You need to provide list of objects that contain `path` and `label`, like in example below:
+If you need to use dynamic breadcrumb in the middle of your breadcrumb list, than you should provide whole chain in component's `parentsList` property. You need to provide list of objects that contain `path` and `label`, like in example below:
 
 **Post.vue**
 ```
