@@ -14,21 +14,25 @@ export default {
         <li
           class="parent-breadcrumb"
           v-for="route in parentRoutes"
-          :key="route.label || route.name"
+          :key="route.label"
         >
-          <router-link
-            :to="route.path"
-            exact
-          >
-            {{route.label || getRouteLabel(route)}}
-          </router-link>
+          <slot :to="route.to" :label="route.label">
+            <router-link
+              :to="route.to"
+              exact
+            >
+              {{route.label}}
+            </router-link>
+          </slot>
         </li>
       </template>
 
       <li class="current-breadcrumb">
-        <a>
-          {{getRouteLabel(currentRoute)}}
-        </a>
+        <slot name="current" :label="getRouteLabel(currentRoute)">
+          <a>
+            {{getRouteLabel(currentRoute)}}
+          </a>
+        </slot>
       </li>
     </ul>
   `,
@@ -88,27 +92,29 @@ export default {
 
       return routeLabel
     },
-    resolveDefaultParentRoute (parentRouteRecord) {
+
+    resolveRootParentRoute (parentRouteRecord) {
       let parentRoutePath = parentRouteRecord.path || '/'
 
       return this.$router.resolve({path: parentRoutePath}).route
     },
-    getDefaultParentRoute (route) {
-      let defaultParentRoute
+
+    getRootParentRoute (route) {
+      let rootParentRoute
       let matchedRoutes = route.matched
 
       // If second matched route is not the same with current route, return it as next parent
-      defaultParentRoute = this.resolveDefaultParentRoute(matchedRoutes[matchedRoutes.length - 2])
+      rootParentRoute = this.resolveRootParentRoute(matchedRoutes[matchedRoutes.length - 2])
 
       // If second matched route is the same with current route, return route after next as parent
-      if (route.path === defaultParentRoute.path) {
-        defaultParentRoute = this.resolveDefaultParentRoute(matchedRoutes[matchedRoutes.length - 3])
+      if (route.path === rootParentRoute.path) {
+        rootParentRoute = this.resolveRootParentRoute(matchedRoutes[matchedRoutes.length - 3])
       }
 
-      return defaultParentRoute
+      return rootParentRoute
     },
-    getComponentParents (route) {
-      // TODO: fix bug when route having parentsList doesn't show in crumbs itself
+
+    getDirectParentRoute (route) {
       let breadcrumb = route.meta.breadcrumb
       let componentBreadcrumb = this.getMatchedComponentBreadcrumb(route)
 
@@ -116,45 +122,40 @@ export default {
         breadcrumb = componentBreadcrumb
       }
 
-      if (breadcrumb) {
-        // return breadcrumb.parent
-        //       ? this.$router.resolve({name: breadcrumb.parent}).route
-        //       : breadcrumb.parentsList
-        let ancestors = breadcrumb.parentsList
+      if (breadcrumb && breadcrumb.parent) {
         let breadcrumbParent = breadcrumb.parent
+        let routeResolveObject
 
         if (breadcrumbParent && breadcrumb.parentsList) {
           console.warn(`Vue-2-Crumbs Warning: You have both 'parent' and 'parentsList' properties for route '${route.name}'!\nPlease, use just one of these per route. By default Vue-2-Crumbs plugin use 'parent' property.`);
         }
 
-        if (breadcrumbParent) {
-          let routeResolveObject
-          if (typeof breadcrumbParent === 'string') {
-            routeResolveObject = {name: breadcrumbParent}
-          } else if (utils.isObject(breadcrumbParent)) {
-            routeResolveObject = breadcrumbParent
-          } else {
-            console.error(`Vue-2-Crumbs Error: 'parent' property in breadcrumb object for '${route.name}' route has wrong type. Only string or object is allowed`);
-          }
-
-          ancestors = this.$router.resolve(routeResolveObject).route
+        if (typeof breadcrumbParent === 'string') {
+          routeResolveObject = {name: breadcrumbParent}
+        } else if (utils.isObject(breadcrumbParent)) {
+          routeResolveObject = breadcrumbParent
+        } else {
+          console.error(`Vue-2-Crumbs Error: 'parent' property in breadcrumb object for '${route.name}' route has wrong type. Only string or object is allowed`);
         }
-        return ancestors
+
+        return this.$router.resolve(routeResolveObject).route
       }
     },
 
     // Function resolve a parent route if such exist
     getParentRoute (route) {
+      let parentRoute
+      let directParentRoute = this.getDirectParentRoute(route)
+
       // Check if component has breadcrumb object
-      let parentsRoutes = this.getComponentParents(route)
-      if (parentsRoutes) {
-        return parentsRoutes
+      if (directParentRoute) {
+        parentRoute = directParentRoute
+      } else if (route.matched && route.matched.length > 1) {
+        // Get Default Route Parent (if sub-routing uses)
+        parentRoute = this.getRootParentRoute(route)
       }
 
-      // Return Default Route Parent (if sub-routing uses)
-      if (route.matched && route.matched.length > 1) {
-        return this.getDefaultParentRoute(route)
-      }
+      return parentRoute
     },
 
     // Function returns array of parents routes
@@ -162,13 +163,14 @@ export default {
       let parentRoutesArray = []
       let parentRoute = this.getParentRoute(route)
 
-      // If parentRoute is Array, than it comes from 'parents' property in component's breadcrumb and needs to be handled properly
-      if (Array.isArray(parentRoute)) {
-        parentRoutesArray = parentRoute
+      if (parentRoute) {
+        let {path, name, params, query, hash} = parentRoute
+        let routeObjectToAdd = {
+          to: {path, name, params, query, hash},
+          label: this.getRouteLabel(parentRoute)
+        }
 
-      // If parentRoute exist and isn't array, add it to parents routes array
-      } else if (parentRoute) {
-        parentRoutesArray = [...this.getAncestorsRoutesArray(parentRoute), parentRoute]
+        parentRoutesArray = [...this.getAncestorsRoutesArray(parentRoute), routeObjectToAdd]
       }
 
       return parentRoutesArray
