@@ -4,9 +4,11 @@ Breadcrumbs plugin for Vue.js 2 framework that allows to select parent route in 
 
 ##### Features:
 - [Setting parent](#simple-example) route without need to actually nest it in children array
+- [Customized template](#custom-template) are allowed using scoped slots
 - [Sub-routing](#sub-routing) as default behavior
 - Define [breadcrumb info](#define-breadcrumb-data-in-component) in page component
 - Shorthand labeling (`breadcrumb: 'Page Label'`)
+- Define parent's [params, query, hash](#define-parents-params-query-hash)
 - [Dynamic breadcrumbs](#dynamic-breadcrumbs) (with some caveats).
 
 ##### Requirements:
@@ -68,6 +70,38 @@ new VueRouter({
 ```
 ##### Result:
 ![Simple Usage Result](https://raw.githubusercontent.com/Suruat/vue-2-crumbs/master/screenshots/simple-usage.png)
+
+
+### Custom template
+####__(new in v0.5.3)__
+By default component's template is `ul > li > router-link`. But starts with _v0.5.3_ you can provide custom template using __scoped slots__ and __container__ prop at `app-breadcrumbs` component.
+
+You will have `label` string `to` object and `utils` object at your disposal. `utils` is helper object, that serves you to contain all information you may want to use in custom template. Aware that `utils` can be _undefined_, so you need to check it before use it in template.
+
+To define `utils` object just add it to `breadcrumb` object in router definition or [directly in component](#define-breadcrumb-data-in-component).
+
+For targeting current page in breadcrumb chain, use named slot - `current`. Parents breadcrumb chunks is default slot.
+*__Note:__ Obviously, you should define `router-link` at some point, in your custom template for make breadcrumbs work.*
+####Example:
+```
+<app-breadcrumbs container="nav">
+  <h6 slot-scope="{to, label, utils}">
+    <router-link
+      :to="to"
+      class="your-custom-class"
+      exact
+      :itemprop="utils && utils.itemprop"
+    >{{label}}</router-link>
+    <i class="fas fa-angle-right"></i>
+  </h6>
+
+  <span
+    slot="current"
+    slot-scope="{label}"
+    class="custom-current-class"
+  >{{label}}</span>
+</app-breadcrumbs>
+```
 
 
 ### Sub-routing
@@ -216,6 +250,23 @@ new VueRouter({
 ![Combine Usage Result](https://raw.githubusercontent.com/Suruat/vue-2-crumbs/master/screenshots/component-usage.png)
 
 
+### Define parent's params, query, hash
+####__(new in v0.5.3)__
+You can provide not only route's name as a `parent` property, but also it's params, query and hash. Just use object with corresponding keys:
+```
+parent: {
+  name: 'category',
+  params: {
+    catSlug: 'latest',
+  },
+  query: {
+    sort: 'ASC'
+  },
+  hash: '#test'
+}
+```
+
+
 ### Dynamic Breadcrumbs
 You can use **dynamic data** to provide breadcrumb information (as `label` and `parent`) in page component.
 **IMPORTANT!** Because of the tech limitations, you need to be sure, that dynamic breadcrumb is the last one in the list. Plugin doesn't allowed to build breadcrumbs list with dynamic part in the middle of it. To handle this cases, please check [using `parentsList` property](#using-parentslist).
@@ -288,11 +339,26 @@ breadcrumb () {
     label: this.postTitle,
     parentsList: [
       {
-        path: `/${this.$route.params.categorySlug}`,
+        to: {
+          name: 'category',
+          params: {
+            catSlug: this.$route.params.catSlug
+          }
+        },
         label: this.categoryTitle
       },
       {
-        path: '/',
+        to: {
+          name: 'blog',
+          query: {
+            section: 'news'
+          },
+          hash: '#hot'
+        },
+        label: 'Blog Page'
+      },
+      {
+        to: '/',
         label: 'Home'
       }
     ]

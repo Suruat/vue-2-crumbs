@@ -8,23 +8,22 @@ export default {
   template: `
     <ul
       class="breadcrumbs-container"
+      :is="container"
       v-if="$router"
     >
       <template v-if="parentRoutes.length">
-        <li
-          class="parent-breadcrumb"
-          v-for="route in parentRoutes"
-          :key="route.label"
-        >
-          <slot :to="route.to" :label="route.label">
-            <router-link
-              :to="route.to"
-              exact
-            >
-              {{route.label}}
-            </router-link>
+        <template v-for="route in parentRoutes">
+          <slot :to="route.to" :label="route.label" :utils="route.utils">
+            <li class="parent-breadcrumb">
+              <router-link
+                :to="route.to"
+                exact
+              >
+                {{route.label}}
+              </router-link>
+            </li>
           </slot>
-        </li>
+        </template>
       </template>
 
       <li class="current-breadcrumb">
@@ -36,6 +35,12 @@ export default {
       </li>
     </ul>
   `,
+  props: {
+    container: {
+      type: String,
+      default: 'ul'
+    }
+  },
   data () {
     return {
       parentsDynamicRoutes: [],
@@ -57,12 +62,22 @@ export default {
   },
   // TODO: Write docs for each method
   methods: {
-    // Function returns component's breadcrumb property
-    getMatchedComponentBreadcrumb (route) {
-      let matchedRouteRecord = route.matched[route.matched.length - 1]
-      let matchedComponent = matchedRouteRecord.components.default
+    // Function returns resolved page's breadcrumb property
+    getBreadcrumb (route) {
+      let breadcrumb = route.meta.breadcrumb
+      const matchedRouteRecord = route.matched[route.matched.length - 1]
+      const matchedComponent = matchedRouteRecord.components.default
+      const componentBreadcrumb = matchedComponent.breadcrumb
 
-      return matchedComponent.breadcrumb
+      if (componentBreadcrumb && typeof componentBreadcrumb !== 'function') {
+        if (breadcrumb && typeof breadcrumb == 'object') {
+          breadcrumb = Object.assign(breadcrumb, componentBreadcrumb)
+        } else {
+          breadcrumb = componentBreadcrumb
+        }
+      }
+
+      return breadcrumb
     },
 
     // Function return label from any breadcrumb property
@@ -78,12 +93,7 @@ export default {
     // Function resolves a label of the provided route
     getRouteLabel (route) {
       let routeLabel = route.name
-      let breadcrumb = route.meta.breadcrumb
-      let componentBreadcrumb = this.getMatchedComponentBreadcrumb(route)
-
-      if (componentBreadcrumb && typeof componentBreadcrumb !== 'function') {
-        breadcrumb = componentBreadcrumb
-      }
+      const breadcrumb = this.getBreadcrumb(route)
 
       let breadcrumbLabel = this.getBreadcrumbLabel(breadcrumb)
       if (breadcrumbLabel) {
@@ -93,15 +103,23 @@ export default {
       return routeLabel
     },
 
+    // Function resolves a utils object of the provided route
+    getRouteUtils (route) {
+      const breadcrumb = this.getBreadcrumb(route)
+      if (breadcrumb && breadcrumb.utils) {
+        return breadcrumb.utils
+      }
+    },
+
     resolveRootParentRoute (parentRouteRecord) {
-      let parentRoutePath = parentRouteRecord.path || '/'
+      const parentRoutePath = parentRouteRecord.path || '/'
 
       return this.$router.resolve({path: parentRoutePath}).route
     },
 
     getRootParentRoute (route) {
       let rootParentRoute
-      let matchedRoutes = route.matched
+      const matchedRoutes = route.matched
 
       // If second matched route is not the same with current route, return it as next parent
       rootParentRoute = this.resolveRootParentRoute(matchedRoutes[matchedRoutes.length - 2])
@@ -115,15 +133,10 @@ export default {
     },
 
     getDirectParentRoute (route) {
-      let breadcrumb = route.meta.breadcrumb
-      let componentBreadcrumb = this.getMatchedComponentBreadcrumb(route)
-
-      if (componentBreadcrumb && typeof componentBreadcrumb !== 'function') {
-        breadcrumb = componentBreadcrumb
-      }
+      const breadcrumb = this.getBreadcrumb(route)
 
       if (breadcrumb && breadcrumb.parent) {
-        let breadcrumbParent = breadcrumb.parent
+        const breadcrumbParent = breadcrumb.parent
         let routeResolveObject
 
         if (breadcrumbParent && breadcrumb.parentsList) {
@@ -145,7 +158,7 @@ export default {
     // Function resolve a parent route if such exist
     getParentRoute (route) {
       let parentRoute
-      let directParentRoute = this.getDirectParentRoute(route)
+      const directParentRoute = this.getDirectParentRoute(route)
 
       // Check if component has breadcrumb object
       if (directParentRoute) {
@@ -161,13 +174,14 @@ export default {
     // Function returns array of parents routes
     getAncestorsRoutesArray (route) {
       let parentRoutesArray = []
-      let parentRoute = this.getParentRoute(route)
+      const parentRoute = this.getParentRoute(route)
 
       if (parentRoute) {
-        let {path, name, params, query, hash} = parentRoute
-        let routeObjectToAdd = {
+        const {path, name, params, query, hash} = parentRoute
+        const routeObjectToAdd = {
           to: {path, name, params, query, hash},
-          label: this.getRouteLabel(parentRoute)
+          label: this.getRouteLabel(parentRoute),
+          utils: this.getRouteUtils(parentRoute)
         }
 
         parentRoutesArray = [...this.getAncestorsRoutesArray(parentRoute), routeObjectToAdd]
@@ -185,10 +199,10 @@ export default {
   created () {
     // Listen to the change of route breadcrumb object
     this.$_vue2Crumbs_eventBUS.$on('breadcrumbChanged', () => {
-      let metaBreadcrumb = this.$route.meta.breadcrumb
+      const metaBreadcrumb = this.$route.meta.breadcrumb
 
       if (metaBreadcrumb.parentsList) {
-        this.parentsDynamicRoutes = metaBreadcrumb.parentsList.reverse()
+        this.parentsDynamicRoutes = [...metaBreadcrumb.parentsList].reverse()
       }
       if (metaBreadcrumb.parent) {
         this.parentHelper = metaBreadcrumb.parent
