@@ -73,8 +73,8 @@ new VueRouter({
 
 
 ### Custom template
-####__(new in v0.5.3)__
-By default component's template is `ul > li > router-link`. But starts with _v0.5.3_ you can provide custom template using __scoped slots__ and __container__ prop at `app-breadcrumbs` component.
+####__(new in v0.5.1)__
+By default component's template is `ul > li > router-link`. But starts with _v0.5.1_ you can provide custom template using __scoped slots__ and __container__ prop at `app-breadcrumbs` component.
 
 You will have `label` string `to` object and `utils` object at your disposal. `utils` is helper object, that serves you to contain all information you may want to use in custom template. Aware that `utils` can be _undefined_, so you need to check it before use it in template.
 
@@ -251,7 +251,7 @@ new VueRouter({
 
 
 ### Define parent's params, query, hash
-####__(new in v0.5.3)__
+####__(new in v0.5.1)__
 You can provide not only route's name as a `parent` property, but also it's params, query and hash. Just use object with corresponding keys:
 ```
 parent: {
