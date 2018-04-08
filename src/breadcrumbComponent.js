@@ -1,32 +1,46 @@
+const utils = {}
+utils.isObject = checkMe => {
+  return typeof checkMe === 'object'&& !Array.isArray(checkMe) && checkMe !== null
+}
+
 export default {
   name: 'app-breadcrumbs',
   template: `
     <ul
       class="breadcrumbs-container"
+      :is="container"
       v-if="$router"
     >
       <template v-if="parentRoutes.length">
-        <li
-          class="parent-breadcrumb"
-          v-for="route in parentRoutes"
-          :key="route.label || route.name"
-        >
-          <router-link
-            :to="route.path"
-            exact
-          >
-            {{route.label || $_vue2Crumbs_getRouteLabel(route)}}
-          </router-link>
-        </li>
+        <template v-for="route in parentRoutes">
+          <slot :to="route.to" :label="route.label" :utils="route.utils">
+            <li class="parent-breadcrumb">
+              <router-link
+                :to="route.to"
+                exact
+              >
+                {{route.label}}
+              </router-link>
+            </li>
+          </slot>
+        </template>
       </template>
 
       <li class="current-breadcrumb">
-        <a>
-          {{$_vue2Crumbs_getRouteLabel(currentRoute)}}
-        </a>
+        <slot name="current" :label="getRouteLabel(currentRoute)">
+          <a>
+            {{getRouteLabel(currentRoute)}}
+          </a>
+        </slot>
       </li>
     </ul>
   `,
+  props: {
+    container: {
+      type: String,
+      default: 'ul'
+    }
+  },
   data () {
     return {
       parentsDynamicRoutes: [],
@@ -43,17 +57,31 @@ export default {
     parentRoutes () {
       return this.parentsDynamicRoutes.length
              ? this.parentsDynamicRoutes
-             : this.$_vue2Crumbs_addParentRoute(this.currentRoute)
+             : this.getAncestorsRoutesArray(this.currentRoute)
     }
   },
-  // TODO: Write docs for methods
+  // TODO: Write docs for each method
   methods: {
-    $_vue2Crumbs_getMatchedComponentBreadcrumb (route) {
-      let matchedRouteRecord = route.matched[route.matched.length - 1]
-      let matchedComponent = matchedRouteRecord.components.default
-      return matchedComponent.breadcrumb
+    // Function returns resolved page's breadcrumb property
+    getBreadcrumb (route) {
+      let breadcrumb = route.meta.breadcrumb
+      const matchedRouteRecord = route.matched[route.matched.length - 1]
+      const matchedComponent = matchedRouteRecord.components.default
+      const componentBreadcrumb = matchedComponent.breadcrumb
+
+      if (componentBreadcrumb && typeof componentBreadcrumb !== 'function') {
+        if (breadcrumb && typeof breadcrumb == 'object') {
+          breadcrumb = Object.assign(breadcrumb, componentBreadcrumb)
+        } else {
+          breadcrumb = componentBreadcrumb
+        }
+      }
+
+      return breadcrumb
     },
-    $_vue2Crumbs_getBreadcrumbLabel (breadcrumb) {
+
+    // Function return label from any breadcrumb property
+    getBreadcrumbLabel (breadcrumb) {
       if (typeof breadcrumb === 'object') {
         return breadcrumb.label
       }
@@ -61,133 +89,120 @@ export default {
         return breadcrumb
       }
     },
-    $_vue2Crumbs_getComponentLabel (route) {
-      let componentBreadcrumb = this.$_vue2Crumbs_getMatchedComponentBreadcrumb(route)
 
-      if (componentBreadcrumb) {
-        if (typeof componentBreadcrumb !== 'function') {
-          return this.$_vue2Crumbs_getBreadcrumbLabel(componentBreadcrumb)
-        }
-
-        return this.$_vue2Crumbs_getBreadcrumbLabel(route.meta.breadcrumb)
-      }
-    },
     // Function resolves a label of the provided route
-    $_vue2Crumbs_getRouteLabel (route) {
-      // Check is breadcrumb object exist in component
-      let componentLabel = this.$_vue2Crumbs_getComponentLabel(route)
-      if (componentLabel) {
-        return componentLabel
+    getRouteLabel (route) {
+      let routeLabel = route.name
+      const breadcrumb = this.getBreadcrumb(route)
+
+      let breadcrumbLabel = this.getBreadcrumbLabel(breadcrumb)
+      if (breadcrumbLabel) {
+        routeLabel = breadcrumbLabel
       }
 
-      // Check is breadcrumb object exist in route meta
-      if (route.meta.breadcrumb) {
-        let metaLabel = this.$_vue2Crumbs_getBreadcrumbLabel(route.meta.breadcrumb)
-        if (metaLabel) {
-          return metaLabel
-        }
+      return routeLabel
+    },
+
+    // Function resolves a utils object of the provided route
+    getRouteUtils (route) {
+      const breadcrumb = this.getBreadcrumb(route)
+      if (breadcrumb && breadcrumb.utils) {
+        return breadcrumb.utils
       }
-
-      // By Default Return Route Name
-      return route.name
     },
-    $_vue2Crumbs_isSameAsParent (route) {
-      let parentRouteRecord = route.matched[route.matched.length - 2]
-      let parentRoutePath = parentRouteRecord.path || '/'
-      let parentRoute = this.$router.resolve({path: parentRoutePath}).route
 
-      return route.path === parentRoute.path
+    resolveRootParentRoute (parentRouteRecord) {
+      const parentRoutePath = parentRouteRecord.path || '/'
+
+      return this.$router.resolve({path: parentRoutePath}).route
     },
-    $_vue2Crumbs_getDefaultRouteParent (route) {
-      // TODO: add handler 'parent' property on route object
-      let parentRouteRecord
-      let parentRoutePath
 
-      // If second matched route is not the same with current route, return it as next parent route
-      if (!this.$_vue2Crumbs_isSameAsParent(route)) {
-        parentRouteRecord = route.matched[route.matched.length - 2]
-        if (parentRouteRecord) {
-          let parentRoutePath = parentRouteRecord.path || '/'
-          return this.$router.resolve({path: parentRoutePath}).route
-        }
+    getRootParentRoute (route) {
+      let rootParentRoute
+      const matchedRoutes = route.matched
+
+      // If second matched route is not the same with current route, return it as next parent
+      rootParentRoute = this.resolveRootParentRoute(matchedRoutes[matchedRoutes.length - 2])
 
       // If second matched route is the same with current route, return route after next as parent
-      } else {
-        parentRouteRecord = route.matched[route.matched.length - 3]
-        if (parentRouteRecord) {
-          parentRoutePath = parentRouteRecord.path || '/'
-          return this.$router.resolve({path: parentRoutePath}).route
+      if (route.path === rootParentRoute.path) {
+        rootParentRoute = this.resolveRootParentRoute(matchedRoutes[matchedRoutes.length - 3])
+      }
+
+      return rootParentRoute
+    },
+
+    getDirectParentRoute (route) {
+      const breadcrumb = this.getBreadcrumb(route)
+
+      if (breadcrumb && breadcrumb.parent) {
+        const breadcrumbParent = breadcrumb.parent
+        let routeResolveObject
+
+        if (breadcrumbParent && breadcrumb.parentsList) {
+          console.warn(`Vue-2-Crumbs Warning: You have both 'parent' and 'parentsList' properties for route '${route.name}'!\nPlease, use just one of these per route. By default Vue-2-Crumbs plugin use 'parent' property.`);
         }
+
+        if (typeof breadcrumbParent === 'string') {
+          routeResolveObject = {name: breadcrumbParent}
+        } else if (utils.isObject(breadcrumbParent)) {
+          routeResolveObject = breadcrumbParent
+        } else {
+          console.error(`Vue-2-Crumbs Error: 'parent' property in breadcrumb object for '${route.name}' route has wrong type. Only string or object is allowed`);
+        }
+
+        return this.$router.resolve(routeResolveObject).route
       }
     },
-    $_vue2Crumbs_getComponentParents (route) {
-      let componentBreadcrumb = this.$_vue2Crumbs_getMatchedComponentBreadcrumb(route)
 
-      if (componentBreadcrumb) {
-        // If breadcrumb property isn't a function, return 'parents' property from it
-        if (typeof componentBreadcrumb !== 'function') {
-          if (componentBreadcrumb.parent) {
-            return this.$router.resolve({name: componentBreadcrumb.parent}).route
-          }
-          return componentBreadcrumb.parentsList
-        }
-
-        // If breadcrumb property is function, get parents from route meta (there plugin stores it)
-        if (route.meta.breadcrumb) {
-          let metaBreadcrumb = route.meta.breadcrumb
-          if (metaBreadcrumb.parent) {
-            return this.$router.resolve({name: metaBreadcrumb.parent}).route
-          }
-
-          return metaBreadcrumb.parentsList
-        }
-      }
-    },
     // Function resolve a parent route if such exist
-    $_vue2Crumbs_getParentRoute (route) {
-      // Check is component has breadcrumb object
-      let parentsRoutes = this.$_vue2Crumbs_getComponentParents(route)
-      if (parentsRoutes) {
-        return parentsRoutes
+    getParentRoute (route) {
+      let parentRoute
+      const directParentRoute = this.getDirectParentRoute(route)
+
+      // Check if component has breadcrumb object
+      if (directParentRoute) {
+        parentRoute = directParentRoute
+      } else if (route.matched && route.matched.length > 1) {
+        // Get Default Route Parent (if sub-routing uses)
+        parentRoute = this.getRootParentRoute(route)
       }
 
-      // If route meta have breadcrumb object and 'parent' propery inside it, get parent route from it
-      if (route.meta.breadcrumb && route.meta.breadcrumb.parent) {
-        return this.$router.resolve({name: route.meta.breadcrumb.parent}).route
-      }
-
-      // Return Default Route Parent (if sub-routing uses)
-      if (route.matched && route.matched.length > 1) {
-        return this.$_vue2Crumbs_getDefaultRouteParent(route)
-      }
+      return parentRoute
     },
-    $_vue2Crumbs_addParentRoute (route) {
-      let parentRoute = this.$_vue2Crumbs_getParentRoute(route)
 
-      // If parentRoute is Array, than it comes from 'parents' property in component's breadcrumb and needs to be handled properly
-      if (Array.isArray(parentRoute)) {
-        return parentRoute
+    // Function returns array of parents routes
+    getAncestorsRoutesArray (route) {
+      let parentRoutesArray = []
+      const parentRoute = this.getParentRoute(route)
 
-      // If parentRoute exist and isn't array, add it to parents routes array
-      } else if (parentRoute) {
-        return [].concat(this.$_vue2Crumbs_addParentRoute(parentRoute), parentRoute)
+      if (parentRoute) {
+        const {path, name, params, query, hash} = parentRoute
+        const routeObjectToAdd = {
+          to: {path, name, params, query, hash},
+          label: this.getRouteLabel(parentRoute),
+          utils: this.getRouteUtils(parentRoute)
+        }
+
+        parentRoutesArray = [...this.getAncestorsRoutesArray(parentRoute), routeObjectToAdd]
       }
-      return []
+
+      return parentRoutesArray
     }
   },
   watch: {
     '$route' () {
-      // Set back component 'parentsDynamicRoutes' property on each route change
+      // Set empty component's 'parentsDynamicRoutes' property on each route change
       this.parentsDynamicRoutes = []
     }
   },
   created () {
     // Listen to the change of route breadcrumb object
     this.$_vue2Crumbs_eventBUS.$on('breadcrumbChanged', () => {
-      let metaBreadcrumb = this.$route.meta.breadcrumb
+      const metaBreadcrumb = this.$route.meta.breadcrumb
 
       if (metaBreadcrumb.parentsList) {
-        this.parentsDynamicRoutes = metaBreadcrumb.parentsList.reverse()
+        this.parentsDynamicRoutes = [...metaBreadcrumb.parentsList].reverse()
       }
       if (metaBreadcrumb.parent) {
         this.parentHelper = metaBreadcrumb.parent
