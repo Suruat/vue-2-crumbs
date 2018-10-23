@@ -1,6 +1,7 @@
-const utils = {}
-utils.isObject = checkMe => {
-  return typeof checkMe === 'object'&& !Array.isArray(checkMe) && checkMe !== null
+const utils = {
+  isObject (checkMe) {
+    return typeof checkMe === 'object'&& !Array.isArray(checkMe) && checkMe !== null
+  }
 }
 
 export default {
@@ -26,7 +27,7 @@ export default {
         </template>
       </template>
 
-      <li class="current-breadcrumb">
+      <li v-if="!isInitialEmptyRoute" class="current-breadcrumb">
         <slot name="current" :label="getRouteLabel(currentRoute)">
           <a>
             {{getRouteLabel(currentRoute)}}
@@ -48,16 +49,22 @@ export default {
     }
   },
   computed: {
+    isInitialEmptyRoute () {
+      return this.$route.fullPath === '/' && !this.$route.matched.length
+    },
     currentRoute () {
       // This check is just to make sure that '$forceUpdate' would work
-      if (this.parentHelper || !this.parentHelper) {
+      if (!this.isInitialEmptyRoute && (this.parentHelper || !this.parentHelper)) {
         return this.$route
       }
     },
     parentRoutes () {
-      return this.parentsDynamicRoutes.length
-             ? this.parentsDynamicRoutes
-             : this.getAncestorsRoutesArray(this.currentRoute)
+      if (!this.isInitialEmptyRoute) {
+        return this.parentsDynamicRoutes.length
+          ? this.parentsDynamicRoutes
+          : this.getAncestorsRoutesArray(this.currentRoute)
+      }
+      return []
     }
   },
   // TODO: Write docs for each method
@@ -94,8 +101,8 @@ export default {
     getRouteLabel (route) {
       let routeLabel = route.name
       const breadcrumb = this.getBreadcrumb(route)
+      const breadcrumbLabel = this.getBreadcrumbLabel(breadcrumb)
 
-      let breadcrumbLabel = this.getBreadcrumbLabel(breadcrumb)
       if (breadcrumbLabel) {
         routeLabel = breadcrumbLabel
       }

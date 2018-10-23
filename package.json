@@ -31,13 +31,9 @@
     "babel-preset-env": "^1.6.1",
     "webpack": "^3.11.0"
   },
-  "peerDependencies": {
-    "vue": "2.x.x",
-    "vue-router": "^2.1.x"
-  },
   "scripts": {
     "build": "webpack",
-    "prebublish": "npm run build",
+    "prepublish": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
