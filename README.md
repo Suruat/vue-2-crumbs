@@ -1,6 +1,6 @@
 # vue-2-crumbs
 
-Breadcrumbs plugin for Vue.js 2 framework that allows to select parent route in route meta object with no need of sub-routing.
+Breadcrumbs plugin for Vue.js 2 framework allows to select parent route in route meta object with no need of sub-routing.
 
 ##### Features:
 - [Setting parent](#simple-example) route without need to actually nest it in children array
@@ -10,10 +10,6 @@ Breadcrumbs plugin for Vue.js 2 framework that allows to select parent route in 
 - Shorthand labeling (`breadcrumb: 'Page Label'`)
 - Define parent's [params, query, hash](#define-parents-params-query-hash)
 - [Dynamic breadcrumbs](#dynamic-breadcrumbs) (with some caveats).
-
-##### Requirements:
-- Vue: 2.x.x,
-- vue-router: ^2.1.x
 
 ## Installation
 
@@ -27,7 +23,7 @@ import Vue2Crumbs from 'vue-2-crumbs'
 
 Vue.use(Vue2Crumbs)
 ```
-After that `<app-breadcrumbs></app-breadcrumbs>` component would be at your expose.
+After that `<app-breadcrumbs></app-breadcrumbs>` component would be at your disposal.
 
 ## Usage
 Use the `breadcrumb` property in route's `meta` to provide route label or/and parent route `name` as in example below:
@@ -73,7 +69,7 @@ new VueRouter({
 
 
 ### Custom template
-####__(new in v0.5.1)__
+#### __(new in v0.5.1)__
 By default component's template is `ul > li > router-link`. But starts with _v0.5.1_ you can provide custom template using __scoped slots__ and __container__ prop at `app-breadcrumbs` component.
 
 You will have `label` string `to` object and `utils` object at your disposal. `utils` is helper object, that serves you to contain all information you may want to use in custom template. Aware that `utils` can be _undefined_, so you need to check it before use it in template.
@@ -82,7 +78,7 @@ To define `utils` object just add it to `breadcrumb` object in router definition
 
 For targeting current page in breadcrumb chain, use named slot - `current`. Parents breadcrumb chunks is default slot.
 *__Note:__ Obviously, you should define `router-link` at some point, in your custom template for make breadcrumbs work.*
-####Example:
+#### Example:
 ```
 <app-breadcrumbs container="nav">
   <h6 slot-scope="{to, label, utils}">
@@ -251,7 +247,7 @@ new VueRouter({
 
 
 ### Define parent's params, query, hash
-####__(new in v0.5.1)__
+#### __(new in v0.5.1)__
 You can provide not only route's name as a `parent` property, but also it's params, query and hash. Just use object with corresponding keys:
 ```
 parent: {
