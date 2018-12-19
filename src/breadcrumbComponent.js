@@ -74,7 +74,15 @@ export default {
       let breadcrumb = route.meta.breadcrumb
       const matchedRouteRecord = route.matched[route.matched.length - 1]
       const matchedComponent = matchedRouteRecord.components.default
-      const componentBreadcrumb = matchedComponent.breadcrumb
+      let componentBreadcrumb
+
+      // TODO: do a normal check for typescript-developed component
+      // Check is matched component made with typescript
+      if (typeof matchedComponent === 'function' && !!matchedComponent.super) {
+        componentBreadcrumb = matchedComponent.options.breadcrumb
+      } else {
+        componentBreadcrumb = matchedComponent.breadcrumb
+      }
 
       if (componentBreadcrumb && typeof componentBreadcrumb !== 'function') {
         if (breadcrumb && typeof breadcrumb == 'object') {
