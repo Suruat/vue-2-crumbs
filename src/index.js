@@ -1,53 +1,47 @@
 import Breadcrumbs from './breadcrumbComponent'
-import isEqual from 'lodash.isequal';
+import isEqual from 'lodash.isequal'
 
 const vue2Crumbs = {
-  version: '0.5.3',
+  version: '0.5.4',
   install (Vue, options) {
-    function $_vue2Crumbs_dispatchNewValue(meta) {
-      const {label, parentsList, parent, utils} = this.$breadcrumb
+    function $vue2CrumbsDispatchNewValue (meta) {
+      const { label, parentsList, parent, utils } = this.$breadcrumb
 
       if (!meta.breadcrumb) {
         meta.breadcrumb = {}
       }
 
-      let metaBreadcrumb = meta.breadcrumb
-
-      if (typeof metaBreadcrumb === 'string') {
-        metaBreadcrumb = {
-          label: metaBreadcrumb
+      if (typeof meta.breadcrumb === 'string') {
+        meta.breadcrumb = {
+          label: meta.breadcrumb
         }
       }
 
       if (label) {
-        metaBreadcrumb.label = label
+        meta.breadcrumb.label = label
       }
 
       if (parent) {
-        metaBreadcrumb.parent = parent
+        meta.breadcrumb.parent = parent
       }
 
       if (parentsList) {
-        metaBreadcrumb.parentsList = parentsList
+        meta.breadcrumb.parentsList = parentsList
       }
       if (utils) {
-        metaBreadcrumb.utils = utils
+        meta.breadcrumb.utils = utils
       }
 
       this.$_vue2Crumbs_eventBUS.$emit('breadcrumbChanged')
+
+      return meta.breadcrumb
     }
 
-    function $_vue2Crumbs_checkMatchedRoutes() {
+    function $vue2CrumbsCheckMatchedRoutes () {
       if (this.$breadcrumb) {
-        let matchedRoutes = [...this.$route.matched].reverse()
-        for(let route of matchedRoutes) {
-          const routeComponentInstance = route.instances.default
-
-          if (isEqual(routeComponentInstance, this)) {
-            $_vue2Crumbs_dispatchNewValue.call(this, route.meta)
-            break
-          }
-        }
+        [...this.$route.matched].reverse().forEach(route => {
+          if (isEqual(route.instances.default, this)) return $vue2CrumbsDispatchNewValue.call(this, route.meta)
+        })
       }
     }
 
@@ -56,8 +50,6 @@ const vue2Crumbs = {
     Vue.component(Breadcrumbs.name, Breadcrumbs)
 
     Vue.mixin({
-      methods: {
-      },
       beforeCreate () {
         if (typeof this.$options.breadcrumb === 'function') {
           if (typeof this.$options.computed === 'undefined') {
@@ -68,11 +60,11 @@ const vue2Crumbs = {
       },
       watch: {
         $route () {
-          $_vue2Crumbs_checkMatchedRoutes.call(this)
+          $vue2CrumbsCheckMatchedRoutes.call(this)
         },
         $breadcrumb: {
           handler () {
-            $_vue2Crumbs_checkMatchedRoutes.call(this)
+            $vue2CrumbsCheckMatchedRoutes.call(this)
           },
           immediate: true
         }

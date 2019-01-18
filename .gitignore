@@ -2,3 +2,4 @@ node_modules/
 screenshots/Thumbs.db
 package-lock.json
 /index.js
+.DS_Store
