@@ -77,7 +77,7 @@ You will have `label` string `to` object and `utils` object at your disposal. `u
 To define `utils` object just add it to `breadcrumb` object in router definition or [directly in component](#define-breadcrumb-data-in-component).
 
 For targeting current page in breadcrumb chain, use named slot - `current`. Parents breadcrumb chunks is default slot.
-*__Note:__ Obviously, you should define `router-link` at some point, in your custom template for make breadcrumbs work.*
+*__Note:__ Obviously, you should define `router-link` at some point, in your custom template to make breadcrumbs work.*
 #### Example:
 ```
 <app-breadcrumbs container="nav">
