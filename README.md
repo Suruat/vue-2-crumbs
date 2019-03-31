@@ -265,7 +265,7 @@ parent: {
 
 ### Dynamic Breadcrumbs
 You can use **dynamic data** to provide breadcrumb information (as `label` and `parent`) in page component.
-**IMPORTANT!** Because of the tech limitations, you need to be sure, that dynamic breadcrumb is the last one in the list. Plugin doesn't allowed to build breadcrumbs list with dynamic part in the middle of it. To handle this cases, please check [using `parentsList` property](#using-parentslist).
+**IMPORTANT!** Because of the tech limitations, you need to be sure, that dynamic breadcrumb is the last one in the list. Plugin doesn't allow to build breadcrumbs list with dynamic part in the middle of it. To handle this cases, please check [using `parentsList` property](#using-parentslist).
 
 **Terms.vue**
 ```
