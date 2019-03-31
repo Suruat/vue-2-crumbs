@@ -77,7 +77,7 @@ You will have `label` string `to` object and `utils` object at your disposal. `u
 To define `utils` object just add it to `breadcrumb` object in router definition or [directly in component](#define-breadcrumb-data-in-component).
 
 For targeting current page in breadcrumb chain, use named slot - `current`. Parents breadcrumb chunks is default slot.
-*__Note:__ Obviously, you should define `router-link` at some point, in your custom template for make breadcrumbs work.*
+*__Note:__ Obviously, you should define `router-link` at some point, in your custom template to make breadcrumbs work.*
 #### Example:
 ```
 <app-breadcrumbs container="nav">
@@ -265,7 +265,7 @@ parent: {
 
 ### Dynamic Breadcrumbs
 You can use **dynamic data** to provide breadcrumb information (as `label` and `parent`) in page component.
-**IMPORTANT!** Because of the tech limitations, you need to be sure, that dynamic breadcrumb is the last one in the list. Plugin doesn't allowed to build breadcrumbs list with dynamic part in the middle of it. To handle this cases, please check [using `parentsList` property](#using-parentslist).
+**IMPORTANT!** Because of the tech limitations, you need to be sure, that dynamic breadcrumb is the last one in the list. Plugin doesn't allow to build breadcrumbs list with dynamic part in the middle of it. To handle this cases, please check [using `parentsList` property](#using-parentslist).
 
 **Terms.vue**
 ```
