@@ -1,3 +1,5 @@
+import get from 'lodash/get'
+
 const utils = {
   isObject (checkMe) {
     return typeof checkMe === 'object'&& !Array.isArray(checkMe) && checkMe !== null
@@ -206,9 +208,9 @@ export default {
     }
   },
   watch: {
-    '$route' () {
-      // Set empty component's 'parentsDynamicRoutes' property on each route change
-      this.parentsDynamicRoutes = []
+    '$route' (newRoute) {
+      // Set or clear component's 'parentsDynamicRoutes' property on each route change
+      this.parentsDynamicRoutes = [...get(newRoute, 'meta.breadcrumb.parentsList', [])].reverse()
     }
   },
   created () {
